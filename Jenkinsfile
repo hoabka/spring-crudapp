@@ -10,11 +10,15 @@ pipeline {
             steps {
                 echo 'Build step'
                 sh 'mvn clean install -DskipTests'
+                echo 'Copy file to S3'
             }
         }
-        stage('Test') {
+        stage('Upload to S3') {
             steps {
-                echo 'Test step'
+                withAWS(region:'us-east-1',credentials:'hoabka-aws-credential') {
+                    sh 'echo "Uploading content with AWS creds"'
+                    s3Upload(pathStyleAccessEnabled: true, payloadSigningEnabled: true, file:'app.py', bucket:'jenkins-s3-bucket-wach')
+                }
             }
         }
         stage('Deliver') {
